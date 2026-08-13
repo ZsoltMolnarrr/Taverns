@@ -1,0 +1,6 @@
+{
+  "block.village_taverns.barrel": "Ölfat",
+  "block.village_taverns.barrel.hint": "Arbetsplats för krögarbybor.",
+  "entity.minecraft.villager.bartender": "Krögare",
+  "entity.minecraft.villager.village_taverns.bartender": "Krögare"
+}

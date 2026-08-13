@@ -1,0 +1,6 @@
+{
+  "block.village_taverns.barrel": "ถังเบียร์",
+  "block.village_taverns.barrel.hint": "โต๊ะทำงานสำหรับชาวบ้านบาร์เทนเดอร์",
+  "entity.minecraft.villager.bartender": "บาร์เทนเดอร์",
+  "entity.minecraft.villager.village_taverns.bartender": "บาร์เทนเดอร์"
+}

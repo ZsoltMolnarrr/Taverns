@@ -1,0 +1,6 @@
+{
+  "block.village_taverns.barrel": "Söröshordó",
+  "block.village_taverns.barrel.hint": "Munkaasztal a kocsmáros falusiaknak.",
+  "entity.minecraft.villager.bartender": "Kocsmáros",
+  "entity.minecraft.villager.village_taverns.bartender": "Kocsmáros"
+}

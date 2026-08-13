@@ -1,0 +1,6 @@
+{
+  "block.village_taverns.barrel": "Tong Bir",
+  "block.village_taverns.barrel.hint": "Meja kerja untuk Penduduk Bartender.",
+  "entity.minecraft.villager.bartender": "Bartender",
+  "entity.minecraft.villager.village_taverns.bartender": "Bartender"
+}

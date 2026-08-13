@@ -1,0 +1,6 @@
+{
+  "block.village_taverns.barrel": "Botte di birra",
+  "block.village_taverns.barrel.hint": "Banco da lavoro per i villici Taverniere.",
+  "entity.minecraft.villager.bartender": "Taverniere",
+  "entity.minecraft.villager.village_taverns.bartender": "Taverniere"
+}

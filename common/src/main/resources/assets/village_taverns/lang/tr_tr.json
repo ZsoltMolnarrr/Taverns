@@ -1,0 +1,6 @@
+{
+  "block.village_taverns.barrel": "Bira Fıçısı",
+  "block.village_taverns.barrel.hint": "Meyhaneci köylüler için çalışma tezgahı.",
+  "entity.minecraft.villager.bartender": "Meyhaneci",
+  "entity.minecraft.villager.village_taverns.bartender": "Meyhaneci"
+}

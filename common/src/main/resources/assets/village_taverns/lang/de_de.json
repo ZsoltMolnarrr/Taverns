@@ -1,0 +1,6 @@
+{
+  "block.village_taverns.barrel": "Bierfass",
+  "block.village_taverns.barrel.hint": "Arbeitsplatz für Schankwirt-Dorfbewohner.",
+  "entity.minecraft.villager.bartender": "Schankwirt",
+  "entity.minecraft.villager.village_taverns.bartender": "Schankwirt"
+}

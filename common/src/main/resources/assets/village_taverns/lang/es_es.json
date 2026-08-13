@@ -1,0 +1,6 @@
+{
+  "block.village_taverns.barrel": "Barril de cerveza",
+  "block.village_taverns.barrel.hint": "Mesa de trabajo para aldeanos Tabernero.",
+  "entity.minecraft.villager.bartender": "Tabernero",
+  "entity.minecraft.villager.village_taverns.bartender": "Tabernero"
+}

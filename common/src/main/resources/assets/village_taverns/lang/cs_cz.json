@@ -1,0 +1,6 @@
+{
+  "block.village_taverns.barrel": "Pivní sud",
+  "block.village_taverns.barrel.hint": "Pracovní místo pro vesničana hostinského.",
+  "entity.minecraft.villager.bartender": "Hostinský",
+  "entity.minecraft.villager.village_taverns.bartender": "Hostinský"
+}

@@ -1,0 +1,6 @@
+{
+  "block.village_taverns.barrel": "Thùng Bia",
+  "block.village_taverns.barrel.hint": "Bàn làm việc cho dân làng Pha Chế.",
+  "entity.minecraft.villager.bartender": "Người Pha Chế",
+  "entity.minecraft.villager.village_taverns.bartender": "Người Pha Chế"
+}

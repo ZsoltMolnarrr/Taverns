@@ -1,0 +1,6 @@
+{
+  "block.village_taverns.barrel": "Bačva piva",
+  "block.village_taverns.barrel.hint": "Radni stol za seljane krčmare.",
+  "entity.minecraft.villager.bartender": "Krčmar",
+  "entity.minecraft.villager.village_taverns.bartender": "Krčmar"
+}

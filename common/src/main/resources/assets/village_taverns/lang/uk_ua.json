@@ -1,0 +1,6 @@
+{
+  "block.village_taverns.barrel": "Пивна бочка",
+  "block.village_taverns.barrel.hint": "Робоче місце для жителя-шинкаря.",
+  "entity.minecraft.villager.bartender": "Шинкар",
+  "entity.minecraft.villager.village_taverns.bartender": "Шинкар"
+}

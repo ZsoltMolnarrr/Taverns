@@ -1,0 +1,6 @@
+{
+  "block.village_taverns.barrel": "Biervat",
+  "block.village_taverns.barrel.hint": "Werkplek voor Waard-dorpsbewoners.",
+  "entity.minecraft.villager.bartender": "Waard",
+  "entity.minecraft.villager.village_taverns.bartender": "Waard"
+}

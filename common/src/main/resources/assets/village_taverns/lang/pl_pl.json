@@ -1,0 +1,6 @@
+{
+  "block.village_taverns.barrel": "Beczka piwa",
+  "block.village_taverns.barrel.hint": "Miejsce pracy dla wieśniaka karczmarza.",
+  "entity.minecraft.villager.bartender": "Karczmarz",
+  "entity.minecraft.villager.village_taverns.bartender": "Karczmarz"
+}

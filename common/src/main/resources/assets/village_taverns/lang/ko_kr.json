@@ -1,0 +1,6 @@
+{
+  "block.village_taverns.barrel": "맥주 통",
+  "block.village_taverns.barrel.hint": "바텐더 주민을 위한 작업대.",
+  "entity.minecraft.villager.bartender": "바텐더",
+  "entity.minecraft.villager.village_taverns.bartender": "바텐더"
+}

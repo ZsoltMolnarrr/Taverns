@@ -1,0 +1,6 @@
+{
+  "block.village_taverns.barrel": "Tonneau de bière",
+  "block.village_taverns.barrel.hint": "Plan de travail pour les villageois taverniers.",
+  "entity.minecraft.villager.bartender": "Tavernier",
+  "entity.minecraft.villager.village_taverns.bartender": "Tavernier"
+}

@@ -1,6 +1,7 @@
 # 1.2.0
 
-- Remove Forgified Fabric API dependency for NeoForge
+- NeoForge version no longer needs Forgified Fabric API
+- Fully translated content, now supporting 20 languages
 
 # 1.1.5
 
