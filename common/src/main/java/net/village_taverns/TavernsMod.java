@@ -2,7 +2,6 @@ package net.village_taverns;
 
 import net.fabric_extras.structure_pool.api.StructurePoolAPI;
 import net.fabric_extras.structure_pool.api.StructurePoolConfig;
-import net.fabricmc.loader.api.FabricLoader;
 import net.tiny_config.ConfigManager;
 import net.village_taverns.block.TavernBlocks;
 import net.village_taverns.config.Defaults;
@@ -20,7 +19,7 @@ public class TavernsMod {
 
     public static void init() {
         villageConfig.refresh();
-        if (!FabricLoader.getInstance().isModLoaded("lithostitched")) {
+        if (!Platform.util().isModLoaded("lithostitched")) {
             // Only inject the village if the Lithostitched is not present
             StructurePoolAPI.injectAll(villageConfig.value);
         }
@@ -29,13 +28,5 @@ public class TavernsMod {
 
     public static void registerBlocks() {
         TavernBlocks.register();
-    }
-
-    public static void registerPOI() {
-        TavernVillagers.registerPOI();
-    }
-
-    public static void registerVillagers() {
-        TavernVillagers.registerVillagers();
     }
 }

@@ -1,9 +1,7 @@
 package net.village_taverns;
 
 import com.google.common.collect.ImmutableSet;
-import net.fabricmc.fabric.api.object.builder.v1.trade.TradeOfferHelper;
-import net.fabricmc.fabric.api.object.builder.v1.world.poi.PointOfInterestHelper;
-import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.block.BlockState;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.ai.brain.Activity;
 import net.minecraft.entity.ai.brain.Schedule;
@@ -27,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 
 public class TavernVillagers {
     public static final String BARTENDER = "bartender";
@@ -34,7 +33,16 @@ public class TavernVillagers {
     public static final Schedule ALWAYS_WORK_SCHEDULE = new ScheduleBuilder(new Schedule())
             .withActivity(50, Activity.WORK).withActivity(23950, Activity.REST).build();
     public static final Identifier PROFESSION_ID = Identifier.of(TavernsMod.ID, BARTENDER);
+    public static final int POI_TICKET_COUNT = 1;
+    public static final int POI_SEARCH_DISTANCE = 12;
     @Nullable public static VillagerProfession BAR_TENDER_PROFESSION;
+
+    /// The bartender's workstation (brew-tap barrel) block states for the POI. Registration itself is
+    /// loader-specific (Fabric: `PointOfInterestHelper`; NeoForge: a plain `Registry.register` of a
+    /// `PointOfInterestType`) and lives in each platform's entrypoint; this only exposes the shared state set.
+    public static Set<BlockState> poiBlockStates() {
+        return ImmutableSet.copyOf(TavernBlocks.BARREL.block().getStateManager().getStates());
+    }
 
     public static VillagerProfession createProfession(String name, RegistryKey<PointOfInterestType> workStation) {
         var id = Identifier.of(TavernsMod.ID, name);
@@ -58,13 +66,16 @@ public class TavernVillagers {
 
     public static LinkedHashMap<Integer, List<TradeOffers.Factory>> TRADES = new LinkedHashMap<>();
 
-    public static void registerPOI() {
-        var blockStates = ImmutableSet.copyOf(TavernBlocks.BARREL.block().getStateManager().getStates());
-        PointOfInterestHelper.register(PROFESSION_ID, 1, 12, blockStates);
+    /// Registers the bartender's always-work schedule. Loader-neutral vanilla registry insert; called
+    /// from each platform's entrypoint (Fabric directly; NeoForge in the SCHEDULE `RegisterEvent` phase).
+    public static void registerSchedule() {
         Registry.register(Registries.SCHEDULE, Identifier.of(TavernsMod.ID, ALWAYS_WORK), ALWAYS_WORK_SCHEDULE);
     }
 
-    public static void registerVillagers() {
+    /// Registers the bartender profession and builds the trade table. Loader-neutral. Trade-offer
+    /// wiring is loader-specific and lives in each platform's entrypoint (Fabric `TradeOfferHelper` /
+    /// NeoForge `VillagerTradesEvent`), consuming the shared #TRADES map this populates via setupTrades().
+    public static void registerProfession() {
         var profession = createProfession(
                 BARTENDER,
                 RegistryKey.of(Registries.POINT_OF_INTEREST_TYPE.getKey(), PROFESSION_ID));
@@ -72,12 +83,6 @@ public class TavernVillagers {
         BAR_TENDER_PROFESSION = profession;
 
         setupTrades();
-
-        for (var entry: TRADES.entrySet()) {
-            TradeOfferHelper.registerVillagerOffers(profession, entry.getKey(), factories -> {
-                factories.addAll(entry.getValue());
-            });
-        }
     }
 
     public static String CRIT_MOD_ID = "critical_strike";
@@ -116,7 +121,7 @@ public class TavernVillagers {
         var trades_level_4 = new ArrayList<TradeOffers.Factory>();
         addIfNotNull(trades_level_4, potionOffer("spell_power:spell_power.critical_chance", POTION_PRICE_T3, 1, 3, 30));
         addIfNotNull(trades_level_4, potionOffer("spell_power:spell_power.critical_damage", POTION_PRICE_T3, 1, 3, 30));
-        if (FabricLoader.getInstance().isModLoaded("critical_strike")) {
+        if (Platform.util().isModLoaded("critical_strike")) {
             addIfNotNull(trades_level_4, potionOffer(CRIT_CHANCE_POTION_ID.toString(), POTION_PRICE_T3, 1, 3, 30));
             addIfNotNull(trades_level_4, potionOffer(CRIT_DAMAGE_POTION_ID.toString(), POTION_PRICE_T3, 1, 3, 30));
         }

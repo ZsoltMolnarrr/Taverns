@@ -1,3 +1,7 @@
+# 1.2.0
+
+- Remove Forgified Fabric API dependency for NeoForge
+
 # 1.1.5
 
 - Add compatibility with Critical Strike mod
