@@ -9,9 +9,11 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent;
 import net.neoforged.neoforge.event.village.VillagerTradesEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import net.village_taverns.TavernsMod;
+import net.village_taverns.TavernBrewing;
 import net.village_taverns.TavernVillagers;
 import net.village_taverns.block.TavernBlocks;
 
@@ -24,6 +26,9 @@ public final class NeoForgeMod {
         modBus.addListener(BuildCreativeModeTabContentsEvent.class, NeoForgeMod::buildTabContents);
         // Villager trades — game-bus event (fired per profession); replaces Fabric API's TradeOfferHelper.
         NeoForge.EVENT_BUS.addListener(VillagerTradesEvent.class, NeoForgeMod::onVillagerTrades);
+        // Brewing recipes - game-bus event, fired after BrewingRecipeRegistry.registerDefaults and
+        // before build(), so our recipes append after vanilla's. Replaces Fabric API's BUILD event.
+        NeoForge.EVENT_BUS.addListener(RegisterBrewingRecipesEvent.class, NeoForgeMod::onRegisterBrewingRecipes);
     }
 
     public static void register(RegisterEvent event) {
@@ -46,6 +51,10 @@ public final class NeoForgeMod {
         event.register(RegistryKeys.VILLAGER_PROFESSION, reg -> {
             TavernVillagers.registerProfession();
         });
+    }
+
+    private static void onRegisterBrewingRecipes(RegisterBrewingRecipesEvent event) {
+        TavernBrewing.register(event.getBuilder());
     }
 
     private static void buildTabContents(BuildCreativeModeTabContentsEvent event) {

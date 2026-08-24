@@ -1,3 +1,23 @@
+# 1.3.0
+
+- Added brewing recipes for all Spell Power and Ranged Weapon potions, previously these were only obtainable from bartender trades
+- Spell Power potions brew from Thick potion (Water Bottle + Glowstone Dust):
+  - Arcane Power - Amethyst Shard
+  - Fire Power - Blaze Rod
+  - Frost Power - Snowball
+  - Healing Power - Honeycomb
+  - Lightning Power - Glow Ink Sac
+  - Soul Power - Rotten Flesh
+  - Spell Volatility - Glow Berries
+  - Amplify Spell - Sugar
+  - Spell Haste - Chorus Fruit
+- Ranged Weapon potions brew from Mundane potion (Water Bottle + Redstone):
+  - Ranged Damage - Sweet Berries
+  - Draw Speed - Feather
+- Fermented Spider Eye flips a school potion into its opposite: Fire <-> Frost, Healing <-> Soul, Arcane <-> Lightning
+- All of the above work as Splash and Lingering potions, and as Tipped Arrows
+- Brewing recipes are fully configurable in `config/village_taverns/brewing.json`, any base potion, ingredient and result combination can be added
+
 # 1.2.0
 
 - NeoForge version no longer needs Forgified Fabric API
