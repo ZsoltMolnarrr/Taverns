@@ -13,6 +13,12 @@ architectury {
 fabricApi {
     configureDataGeneration() {
         client = true
+        // Without an explicit modId the helper runs EVERY datagen entrypoint on the dev classpath —
+        // here that meant SpellPower's enchantment provider writing `data/spell_power/**` into
+        // `common/src/main/generated`, which the NeoForge module adds as a resources srcDir and would
+        // therefore ship inside our jar. Taverns registers no providers of its own, so this now
+        // correctly generates nothing.
+        modId = "village_taverns"
         outputDirectory = project(':common').file('src/main/generated')
     }
 }
