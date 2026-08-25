@@ -21,10 +21,10 @@ public final class FabricMod implements ModInitializer {
         PointOfInterestHelper.register(TavernVillagers.PROFESSION_ID,
                 TavernVillagers.POI_TICKET_COUNT, TavernVillagers.POI_SEARCH_DISTANCE,
                 TavernVillagers.poiBlockStates());
-        TavernVillagers.registerSchedule();
+        TavernVillagers.registerSchedule(); // the always-work EnvironmentAttribute<Activity>
         TavernVillagers.registerProfession(); // registers the bartender profession + builds TRADES
         TavernVillagers.TRADES.forEach((tier, factories) ->
-                TradeOfferHelper.registerVillagerOffers(TavernVillagers.BAR_TENDER_PROFESSION, tier,
+                TradeOfferHelper.registerVillagerOffers(TavernVillagers.BARTENDER_PROFESSION_KEY, tier,
                         list -> list.addAll(factories)));
 
         // Brewing recipes for the SpellPower / RangedWeaponAPI potions - Fabric API.

@@ -35,7 +35,9 @@ public final class NeoForgeMod {
         event.register(RegistryKeys.BLOCK, reg -> {
             TavernsMod.registerBlocks();
         });
-        event.register(RegistryKeys.SCHEDULE, reg -> {
+        // 1.21.11: the `minecraft:schedule` registry is gone; the bartender's always-work schedule is
+        // an `EnvironmentAttribute<Activity>` in the `minecraft:environment_attribute` registry.
+        event.register(RegistryKeys.ENVIRONMENT_ATTRIBUTE, reg -> {
             TavernVillagers.registerSchedule();
         });
         event.register(RegistryKeys.POINT_OF_INTEREST_TYPE, reg -> {
@@ -67,7 +69,7 @@ public final class NeoForgeMod {
     }
 
     private static void onVillagerTrades(VillagerTradesEvent event) {
-        if (event.getType() != TavernVillagers.BAR_TENDER_PROFESSION) {
+        if (event.getType() != TavernVillagers.BARTENDER_PROFESSION_KEY) {
             return;
         }
         TavernVillagers.TRADES.forEach((tier, factories) -> {

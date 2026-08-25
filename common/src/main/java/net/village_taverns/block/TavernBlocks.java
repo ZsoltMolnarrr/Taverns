@@ -8,37 +8,44 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.sound.BlockSoundGroup;
 import net.minecraft.util.Identifier;
 import net.village_taverns.TavernsMod;
 
 import java.util.ArrayList;
+import java.util.function.Function;
 
 public class TavernBlocks {
-    public record Entry(String name, Block block, BlockItem item) {
-        public Entry(String name, Block block) {
-            this(name, block, new BlockItem(block, new Item.Settings()));
-        }
-    }
+    public record Entry(String name, Block block, BlockItem item) { }
 
     public static final ArrayList<Entry> all = new ArrayList<>();
 
-    private static Entry entry(String name, Block block) {
-        var settings = new Item.Settings();
-        var item = new BlockItem(block, settings);
-        var entry = new Entry(name, block, item);
+    /// 1.21.2+ requires every `AbstractBlock.Settings` / `Item.Settings` to carry its own
+    /// `registryKey` (`Block id not set` / `Item id not set` on the first construction otherwise),
+    /// so blocks are built from a factory that receives settings already keyed by their id.
+    /// `useBlockPrefixedTranslationKey()` keeps the item on the `block.<ns>.<path>` lang key.
+    private static Entry entry(String name, Function<AbstractBlock.Settings, Block> blockFactory, String hint) {
+        var id = Identifier.of(TavernsMod.ID, name);
+        var block = blockFactory.apply(AbstractBlock.Settings.create()
+                .registryKey(RegistryKey.of(RegistryKeys.BLOCK, id)));
+        var itemSettings = new Item.Settings()
+                .registryKey(RegistryKey.of(RegistryKeys.ITEM, id))
+                .useBlockPrefixedTranslationKey();
+        var entry = new Entry(name, block, new TavernBlockItem(block, itemSettings, hint));
         all.add(entry);
         return entry;
     }
 
-    public static final Entry BARREL = entry(BrewTapBlock.NAME, new BrewTapBlock(
-            AbstractBlock.Settings.create()
+    public static final Entry BARREL = entry(BrewTapBlock.NAME, settings ->
+            new BrewTapBlock(settings
                 .mapColor(MapColor.OAK_TAN)
                 .instrument(NoteBlockInstrument.BASS)
                 .strength(2.5F)
                 .sounds(BlockSoundGroup.WOOD)
                 .nonOpaque()
-    ));
+    ), "block." + TavernsMod.ID + "." + BrewTapBlock.NAME + ".hint");
 
     public static void register() {
         for (var entry : all) {

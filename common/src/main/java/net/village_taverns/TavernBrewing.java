@@ -99,6 +99,6 @@ public class TavernBrewing {
         if (id == null) {
             return null;
         }
-        return Registries.ITEM.getOrEmpty(id).orElse(null);
+        return Registries.ITEM.getOptionalValue(id).orElse(null);
     }
 }

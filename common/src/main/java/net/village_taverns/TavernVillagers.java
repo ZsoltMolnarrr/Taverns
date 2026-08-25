@@ -4,8 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import net.minecraft.block.BlockState;
 import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.ai.brain.Activity;
-import net.minecraft.entity.ai.brain.Schedule;
-import net.minecraft.entity.ai.brain.ScheduleBuilder;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.potion.Potion;
@@ -13,13 +11,18 @@ import net.minecraft.potion.Potions;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.village.TradeOffers;
 import net.minecraft.village.VillagerProfession;
+import net.minecraft.world.attribute.EnvironmentAttribute;
+import net.minecraft.world.attribute.EnvironmentAttributeTypes;
 import net.minecraft.world.poi.PointOfInterestType;
 import net.village_taverns.block.TavernBlocks;
+import net.village_taverns.village.TavernTrades;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -30,9 +33,31 @@ import java.util.Set;
 public class TavernVillagers {
     public static final String BARTENDER = "bartender";
     public static final String ALWAYS_WORK = "always_work";
-    public static final Schedule ALWAYS_WORK_SCHEDULE = new ScheduleBuilder(new Schedule())
-            .withActivity(50, Activity.WORK).withActivity(23950, Activity.REST).build();
+
+    /// The bartender's "schedule".
+    ///
+    /// 1.21.11 deleted `Schedule` / `ScheduleBuilder` and the `minecraft:schedule` registry entirely.
+    /// `Brain#setSchedule` now takes an `EnvironmentAttribute<Activity>` whose value the brain samples
+    /// from the world clock each time it refreshes its activities, and vanilla's day/night rhythm is a
+    /// `Timeline` (`minecraft:villager_schedule`) writing keyframes into
+    /// `EnvironmentAttributes.VILLAGER_ACTIVITY_GAMEPLAY`.
+    ///
+    /// An attribute that no timeline, biome or dimension type ever modifies simply reports its default
+    /// value (`WorldEnvironmentAttributeAccess#getAttributeValue` returns `attribute.getDefaultValue()`
+    /// when there is no entry), so a private attribute defaulting to `WORK` is exactly the old
+    /// "always work" schedule — with no timeline or dimension-type data to ship.
+    public static final EnvironmentAttribute<Activity> ALWAYS_WORK_ACTIVITY =
+            EnvironmentAttribute.builder(EnvironmentAttributeTypes.ACTIVITY).defaultValue(Activity.WORK).build();
+
     public static final Identifier PROFESSION_ID = Identifier.of(TavernsMod.ID, BARTENDER);
+
+    /// Registry key of the bartender profession. Since 1.21.2 both loaders' trade-registration APIs
+    /// (Fabric `TradeOfferHelper.registerVillagerOffers`, NeoForge `VillagerTradesEvent#getType`) are
+    /// keyed by it rather than by the profession object, and `VillagerData#profession()` hands out a
+    /// `RegistryEntry<VillagerProfession>` — so the key is what everything compares against.
+    public static final RegistryKey<VillagerProfession> BARTENDER_PROFESSION_KEY =
+            RegistryKey.of(RegistryKeys.VILLAGER_PROFESSION, PROFESSION_ID);
+
     public static final int POI_TICKET_COUNT = 1;
     public static final int POI_SEARCH_DISTANCE = 12;
     @Nullable public static VillagerProfession BAR_TENDER_PROFESSION;
@@ -47,7 +72,10 @@ public class TavernVillagers {
     public static VillagerProfession createProfession(String name, RegistryKey<PointOfInterestType> workStation) {
         var id = Identifier.of(TavernsMod.ID, name);
         return new VillagerProfession(
-                id.toString(),
+                // 1.21.11: the record's first component is the displayed name as a `Text`, not the id
+                // string vanilla used to build `entity.minecraft.villager.<id>` from. Pass the key the
+                // existing translation files already carry: `entity.minecraft.villager.village_taverns.bartender`.
+                Text.translatable("entity.minecraft.villager." + id.getNamespace() + "." + id.getPath()),
                 (entry) -> {
                     return entry.matchesKey(workStation);
                 },
@@ -66,10 +94,13 @@ public class TavernVillagers {
 
     public static LinkedHashMap<Integer, List<TradeOffers.Factory>> TRADES = new LinkedHashMap<>();
 
-    /// Registers the bartender's always-work schedule. Loader-neutral vanilla registry insert; called
-    /// from each platform's entrypoint (Fabric directly; NeoForge in the SCHEDULE `RegisterEvent` phase).
+    /// Registers the bartender's always-work activity attribute. Loader-neutral vanilla registry
+    /// insert; called from each platform's entrypoint (Fabric directly; NeoForge in the
+    /// ENVIRONMENT_ATTRIBUTE `RegisterEvent` phase). Registration is not what makes the attribute
+    /// work — it is only needed so the id round-trips through codecs/commands like any other.
     public static void registerSchedule() {
-        Registry.register(Registries.SCHEDULE, Identifier.of(TavernsMod.ID, ALWAYS_WORK), ALWAYS_WORK_SCHEDULE);
+        Registry.register(Registries.ENVIRONMENTAL_ATTRIBUTE,
+                Identifier.of(TavernsMod.ID, "gameplay/" + ALWAYS_WORK), ALWAYS_WORK_ACTIVITY);
     }
 
     /// Registers the bartender profession and builds the trade table. Loader-neutral. Trade-offer
@@ -90,11 +121,13 @@ public class TavernVillagers {
     public static Identifier CRIT_DAMAGE_POTION_ID = Identifier.of(CRIT_MOD_ID, CRIT_MOD_ID + "_damage");
 
     public static void setupTrades() {
+        TRADES.clear();
+
         var trades_level_1 = new ArrayList<TradeOffers.Factory>();
-        trades_level_1.add(new TradeOffers.SellItemFactory(Items.COOKED_CHICKEN, 2, 1, 12, 10));
-        trades_level_1.add(new TradeOffers.SellItemFactory(Items.COOKED_BEEF, 4, 1, 12, 10));
-        trades_level_1.add(new TradeOffers.SellItemFactory(Items.BREAD, 4, 1, 12, 10));
-        trades_level_1.add(new TradeOffers.SellItemFactory(Items.COOKED_RABBIT, 6, 1, 12, 10));
+        trades_level_1.add(new TavernTrades.Sell(Items.COOKED_CHICKEN, 2, 1, 12, 10));
+        trades_level_1.add(new TavernTrades.Sell(Items.COOKED_BEEF, 4, 1, 12, 10));
+        trades_level_1.add(new TavernTrades.Sell(Items.BREAD, 4, 1, 12, 10));
+        trades_level_1.add(new TavernTrades.Sell(Items.COOKED_RABBIT, 6, 1, 12, 10));
         TRADES.put(1, trades_level_1);
 
         var trades_level_2 = new ArrayList<TradeOffers.Factory>();
@@ -121,7 +154,7 @@ public class TavernVillagers {
         var trades_level_4 = new ArrayList<TradeOffers.Factory>();
         addIfNotNull(trades_level_4, potionOffer("spell_power:spell_power.critical_chance", POTION_PRICE_T3, 1, 3, 30));
         addIfNotNull(trades_level_4, potionOffer("spell_power:spell_power.critical_damage", POTION_PRICE_T3, 1, 3, 30));
-        if (Platform.util().isModLoaded("critical_strike")) {
+        if (Platform.util().isModLoaded(CRIT_MOD_ID)) {
             addIfNotNull(trades_level_4, potionOffer(CRIT_CHANCE_POTION_ID.toString(), POTION_PRICE_T3, 1, 3, 30));
             addIfNotNull(trades_level_4, potionOffer(CRIT_DAMAGE_POTION_ID.toString(), POTION_PRICE_T3, 1, 3, 30));
         }
@@ -135,7 +168,7 @@ public class TavernVillagers {
         var trades_level_5 = new ArrayList<TradeOffers.Factory>();
         addIfNotNull(trades_level_5, potionOffer("spell_power:spell_power.haste", POTION_PRICE_T4, 1, 3, 30));
         addIfNotNull(trades_level_5, potionOffer("ranged_weapon:ranged_weapon.haste", POTION_PRICE_T4, 1, 3, 30));
-        trades_level_5.add(new TradeOffers.SellItemFactory(Items.OMINOUS_BOTTLE, 60, 1, 1, 40));
+        trades_level_5.add(new TavernTrades.Sell(Items.OMINOUS_BOTTLE, 60, 1, 1, 40));
         trades_level_5.add(potionOffer(Potions.LONG_FIRE_RESISTANCE, POTION_PRICE_T4, 1, 3, 40));
         TRADES.put(5, trades_level_5);
     }
@@ -146,17 +179,18 @@ public class TavernVillagers {
         }
     }
 
-    private static TradeOffers.SellItemFactory potionOffer(String potionId, int price, int count, int maxUses, int experience) {
+    @Nullable
+    private static TavernTrades.Sell potionOffer(String potionId, int price, int count, int maxUses, int experience) {
         var stack = createPotionStack(potionId);
         if (stack != null) {
-            return new TradeOffers.SellItemFactory(stack, price, count, maxUses, experience);
+            return new TavernTrades.Sell(stack, price, count, maxUses, experience);
         }
         return null;
     }
 
-    private static TradeOffers.SellItemFactory potionOffer(RegistryEntry<Potion> potion, int price, int count, int maxUses, int experience) {
+    private static TavernTrades.Sell potionOffer(RegistryEntry<Potion> potion, int price, int count, int maxUses, int experience) {
         var stack = createPotionStack(potion);
-        return new TradeOffers.SellItemFactory(stack, price, count, maxUses, experience);
+        return new TavernTrades.Sell(stack, price, count, maxUses, experience);
     }
 
     @Nullable
