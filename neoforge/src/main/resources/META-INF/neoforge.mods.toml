@@ -16,21 +16,30 @@ logoFile = "icon.png"
 [[dependencies.village_taverns]]
 modId = "neoforge"
 type = "required"
-versionRange = "[21.1,)"
+versionRange = "[21.11,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.village_taverns]]
 modId = "minecraft"
 type = "required"
-versionRange = "[${minecraft_compat_version},)"
+versionRange = "[1.21.11,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.village_taverns]]
 modId = "structure_pool_api"
 type = "required"
-versionRange = "*"
+versionRange = "[${structure_pool_api_version},)"
+ordering = "NONE"
+side = "BOTH"
+
+# Jar-in-jar'd (see neoforge/build.gradle `include(modImplementation(...))`); declared so the
+# dependency is explicit rather than only implied by the bundled jar.
+[[dependencies.village_taverns]]
+modId = "tiny_config"
+type = "required"
+versionRange = "[${tiny_config_version},)"
 ordering = "NONE"
 side = "BOTH"
 

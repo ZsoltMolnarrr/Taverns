@@ -35,7 +35,7 @@ configurations {
 }
 
 repositories {
-    maven { url 'https://maven.fabricmc.net' }
+    maven { url = 'https://maven.fabricmc.net' }
     maven {
         name = 'Modrinth'
         url = 'https://api.modrinth.com/maven'
@@ -55,13 +55,15 @@ dependencies {
 
     include(modImplementation("maven.modrinth:tiny-config:${project.tiny_config_version}-${platform}"))
 
-    modImplementation("maven.modrinth:structure-pool-api:${project.structure_pool_api_version}-${platform}")
-//    modImplementation("net.foundation:structure_pool_api-${platform}:${project.structure_pool_api_version}")
-    modImplementation("maven.modrinth:spell-power:${project.spell_power_version}-${platform}")
-//    modImplementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
-    modImplementation("maven.modrinth:ranged-weapon-api:${project.ranged_weapon_api_version}-${platform}")
-//    modImplementation("net.foundation:ranged_weapon_api-${platform}:${project.ranged_weapon_api_version}")
-    modCompileOnly("maven.modrinth:critical-strike:${project.critical_strike_version}-${platform}")
+//    modImplementation("maven.modrinth:structure-pool-api:${project.structure_pool_api_version}-${platform}")
+    modImplementation("net.foundation:structure_pool_api-${platform}:${project.structure_pool_api_version}")
+//    modImplementation("maven.modrinth:spell-power:${project.spell_power_version}-${platform}")
+    modImplementation("net.spell_power:spell_power-${platform}:${project.spell_power_version}")
+//    modImplementation("maven.modrinth:ranged-weapon-api:${project.ranged_weapon_api_version}-${platform}")
+    modImplementation("net.foundation:ranged_weapon_api-${platform}:${project.ranged_weapon_api_version}")
+    // Critical Strike (own mod) has no 1.21.11 build; Taverns only references it by mod-id string
+    // through `Platform.util().isModLoaded("critical_strike")`, so the dependency is simply dropped.
+    // Re-add `modCompileOnly("maven.modrinth:critical-strike:...")` once it is ported.
 }
 
 processResources {
