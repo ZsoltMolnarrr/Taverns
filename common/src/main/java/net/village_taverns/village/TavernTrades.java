@@ -1,14 +1,14 @@
 package net.village_taverns.village;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.village.TradeOffer;
-import net.minecraft.village.TradeOffers;
-import net.minecraft.village.TradedItem;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.npc.villager.VillagerTrades;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.trading.ItemCost;
+import net.minecraft.world.item.trading.MerchantOffer;
 
 /// Trade-offer factories for the bartender.
 ///
@@ -23,7 +23,7 @@ public final class TavernTrades {
     /// Mirrors vanilla `TradeOffers.SellItemFactory(stack, price, count, maxUses, experience)`
     /// (which itself defaults `multiplier` to 0.05F and calls `stack.setCount(count)`).
     public record Sell(ItemStack stack, int price, int count, int maxUses, int experience, float multiplier)
-            implements TradeOffers.Factory {
+            implements VillagerTrades.ItemListing {
         public Sell(ItemStack stack, int price, int count, int maxUses, int experience) {
             this(stack, price, count, maxUses, experience, 0.05F);
         }
@@ -33,10 +33,10 @@ public final class TavernTrades {
         }
 
         @Override
-        public TradeOffer create(ServerWorld world, Entity entity, Random random) {
+        public MerchantOffer getOffer(ServerLevel world, Entity entity, RandomSource random) {
             var sold = stack.copy();
             sold.setCount(count);
-            return new TradeOffer(new TradedItem(Items.EMERALD, price), sold, maxUses, experience, multiplier);
+            return new MerchantOffer(new ItemCost(Items.EMERALD, price), sold, maxUses, experience, multiplier);
         }
     }
 }

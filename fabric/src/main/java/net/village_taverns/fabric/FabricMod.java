@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.object.builder.v1.trade.TradeOfferHelper;
 import net.fabricmc.fabric.api.object.builder.v1.world.poi.PointOfInterestHelper;
 import net.fabricmc.fabric.api.registry.FabricBrewingRecipeRegistryBuilder;
-import net.minecraft.item.ItemGroups;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.village_taverns.TavernBrewing;
 import net.village_taverns.TavernVillagers;
 import net.village_taverns.TavernsMod;
@@ -33,9 +33,9 @@ public final class FabricMod implements ModInitializer {
         FabricBrewingRecipeRegistryBuilder.BUILD.register(TavernBrewing::register);
 
         // Creative-tab placement (vanilla Functional tab) — Fabric API.
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.FUNCTIONAL).register((content) -> {
+        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.FUNCTIONAL_BLOCKS).register((content) -> {
             for (var entry : TavernBlocks.all) {
-                content.add(entry.item());
+                content.accept(entry.item());
             }
         });
     }

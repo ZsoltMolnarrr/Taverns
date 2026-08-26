@@ -1,11 +1,11 @@
 package net.village_taverns;
 
-import net.minecraft.item.Item;
-import net.minecraft.potion.Potion;
-import net.minecraft.recipe.BrewingRecipeRegistry;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.alchemy.Potion;
+import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.village_taverns.config.BrewingConfig;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 public class TavernBrewing {
     private static final Logger LOGGER = LoggerFactory.getLogger(TavernsMod.ID);
 
-    public static void register(BrewingRecipeRegistry.Builder builder) {
+    public static void register(PotionBrewing.Builder builder) {
         // safeValue(), not value: this fires per world load rather than from init(), so it must not
         // depend on TavernsMod.init() having refreshed first. safeValue() double-checks the loaded
         // flag under a monitor and refreshes if needed, so a concurrent first access cannot observe
@@ -67,7 +67,7 @@ public class TavernBrewing {
                 continue;
             }
 
-            builder.registerPotionRecipe(base, ingredient, result);
+            builder.addMix(base, ingredient, result);
             registered++;
         }
 
@@ -82,14 +82,14 @@ public class TavernBrewing {
     /// Null when the id is malformed or the potion is unregistered — the latter being the normal
     /// case when the owning mod is absent. Mirrors `TavernVillagers.createPotionStack`.
     @Nullable
-    private static RegistryEntry<Potion> potion(String potionId) {
+    private static Holder<Potion> potion(String potionId) {
         var id = Identifier.tryParse(potionId);
         if (id == null) {
             LOGGER.warn("Brewing config: malformed potion id '{}', skipping", potionId);
             return null;
         }
-        return Registries.POTION.getEntry(id)
-                .map(reference -> (RegistryEntry<Potion>) reference)
+        return BuiltInRegistries.POTION.get(id)
+                .map(reference -> (Holder<Potion>) reference)
                 .orElse(null);
     }
 
@@ -99,6 +99,6 @@ public class TavernBrewing {
         if (id == null) {
             return null;
         }
-        return Registries.ITEM.getOptionalValue(id).orElse(null);
+        return BuiltInRegistries.ITEM.getOptional(id).orElse(null);
     }
 }

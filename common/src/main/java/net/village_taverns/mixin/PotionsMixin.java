@@ -1,6 +1,6 @@
 package net.village_taverns.mixin;
 
-import net.minecraft.potion.Potions;
+import net.minecraft.world.item.alchemy.Potions;
 import net.village_taverns.Platform;
 import net.village_taverns.compat.RangedWeaponCompat;
 import net.village_taverns.compat.SpellPowerCompat;

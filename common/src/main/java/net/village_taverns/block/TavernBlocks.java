@@ -1,17 +1,17 @@
 package net.village_taverns.block;
 
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.MapColor;
-import net.minecraft.block.enums.NoteBlockInstrument;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.level.material.MapColor;
 import net.village_taverns.TavernsMod;
 
 import java.util.ArrayList;
@@ -26,13 +26,13 @@ public class TavernBlocks {
     /// `registryKey` (`Block id not set` / `Item id not set` on the first construction otherwise),
     /// so blocks are built from a factory that receives settings already keyed by their id.
     /// `useBlockPrefixedTranslationKey()` keeps the item on the `block.<ns>.<path>` lang key.
-    private static Entry entry(String name, Function<AbstractBlock.Settings, Block> blockFactory, String hint) {
-        var id = Identifier.of(TavernsMod.ID, name);
-        var block = blockFactory.apply(AbstractBlock.Settings.create()
-                .registryKey(RegistryKey.of(RegistryKeys.BLOCK, id)));
-        var itemSettings = new Item.Settings()
-                .registryKey(RegistryKey.of(RegistryKeys.ITEM, id))
-                .useBlockPrefixedTranslationKey();
+    private static Entry entry(String name, Function<BlockBehaviour.Properties, Block> blockFactory, String hint) {
+        var id = Identifier.fromNamespaceAndPath(TavernsMod.ID, name);
+        var block = blockFactory.apply(BlockBehaviour.Properties.of()
+                .setId(ResourceKey.create(Registries.BLOCK, id)));
+        var itemSettings = new Item.Properties()
+                .setId(ResourceKey.create(Registries.ITEM, id))
+                .useBlockDescriptionPrefix();
         var entry = new Entry(name, block, new TavernBlockItem(block, itemSettings, hint));
         all.add(entry);
         return entry;
@@ -40,17 +40,17 @@ public class TavernBlocks {
 
     public static final Entry BARREL = entry(BrewTapBlock.NAME, settings ->
             new BrewTapBlock(settings
-                .mapColor(MapColor.OAK_TAN)
+                .mapColor(MapColor.WOOD)
                 .instrument(NoteBlockInstrument.BASS)
                 .strength(2.5F)
-                .sounds(BlockSoundGroup.WOOD)
-                .nonOpaque()
+                .sound(SoundType.WOOD)
+                .noOcclusion()
     ), "block." + TavernsMod.ID + "." + BrewTapBlock.NAME + ".hint");
 
     public static void register() {
         for (var entry : all) {
-            Registry.register(Registries.BLOCK, Identifier.of(TavernsMod.ID, entry.name), entry.block);
-            Registry.register(Registries.ITEM, Identifier.of(TavernsMod.ID, entry.name), entry.item());
+            Registry.register(BuiltInRegistries.BLOCK, Identifier.fromNamespaceAndPath(TavernsMod.ID, entry.name), entry.block);
+            Registry.register(BuiltInRegistries.ITEM, Identifier.fromNamespaceAndPath(TavernsMod.ID, entry.name), entry.item());
         }
         // Creative-tab placement (vanilla Functional tab) is wired per-platform from each loader's
         // entrypoint (Fabric ItemGroupEvents / NeoForge BuildCreativeModeTabContentsEvent), iterating `all`.

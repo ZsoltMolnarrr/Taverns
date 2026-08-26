@@ -1,10 +1,10 @@
 package net.village_taverns.neoforge;
 
-import net.minecraft.item.ItemGroups;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.world.poi.PointOfInterestType;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.entity.ai.village.poi.PoiType;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
@@ -32,25 +32,25 @@ public final class NeoForgeMod {
     }
 
     public static void register(RegisterEvent event) {
-        event.register(RegistryKeys.BLOCK, reg -> {
+        event.register(Registries.BLOCK, reg -> {
             TavernsMod.registerBlocks();
         });
         // 1.21.11: the `minecraft:schedule` registry is gone; the bartender's always-work schedule is
         // an `EnvironmentAttribute<Activity>` in the `minecraft:environment_attribute` registry.
-        event.register(RegistryKeys.ENVIRONMENT_ATTRIBUTE, reg -> {
+        event.register(Registries.ENVIRONMENT_ATTRIBUTE, reg -> {
             TavernVillagers.registerSchedule();
         });
-        event.register(RegistryKeys.POINT_OF_INTEREST_TYPE, reg -> {
+        event.register(Registries.POINT_OF_INTEREST_TYPE, reg -> {
             // POI registration — vanilla registry insert. NeoForge's POI registry callback wires the
             // block-state -> POI mapping from the type's block states, so no Fabric API helper is needed.
             try {
-                Registry.register(Registries.POINT_OF_INTEREST_TYPE, TavernVillagers.PROFESSION_ID,
-                        new PointOfInterestType(TavernVillagers.poiBlockStates(),
+                Registry.register(BuiltInRegistries.POINT_OF_INTEREST_TYPE, TavernVillagers.PROFESSION_ID,
+                        new PoiType(TavernVillagers.poiBlockStates(),
                                 TavernVillagers.POI_TICKET_COUNT, TavernVillagers.POI_SEARCH_DISTANCE));
             } catch (Exception e) {
             }
         });
-        event.register(RegistryKeys.VILLAGER_PROFESSION, reg -> {
+        event.register(Registries.VILLAGER_PROFESSION, reg -> {
             TavernVillagers.registerProfession();
         });
     }
@@ -60,11 +60,11 @@ public final class NeoForgeMod {
     }
 
     private static void buildTabContents(BuildCreativeModeTabContentsEvent event) {
-        if (!event.getTabKey().equals(ItemGroups.FUNCTIONAL)) {
+        if (!event.getTabKey().equals(CreativeModeTabs.FUNCTIONAL_BLOCKS)) {
             return;
         }
         for (var entry : TavernBlocks.all) {
-            event.add(entry.item());
+            event.accept(entry.item());
         }
     }
 
