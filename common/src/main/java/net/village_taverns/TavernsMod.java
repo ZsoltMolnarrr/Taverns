@@ -1,7 +1,7 @@
 package net.village_taverns;
 
-import net.rpg_foundation.structure_pool_api.api.StructurePoolAPI;
-import net.rpg_foundation.structure_pool_api.api.StructurePoolConfig;
+import net.rpg_foundation.structure_pool.api.StructurePoolAPI;
+import net.rpg_foundation.structure_pool.api.StructurePoolConfig;
 import net.tiny_config.ConfigManager;
 import net.village_taverns.block.TavernBlocks;
 import net.village_taverns.config.BrewingConfig;
