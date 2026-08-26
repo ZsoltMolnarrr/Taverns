@@ -1,6 +1,6 @@
 package net.village_taverns.config;
 
-import net.fabric_extras.structure_pool.api.StructurePoolConfig;
+import net.rpg_foundation.structure_pool_api.api.StructurePoolConfig;
 import net.village_taverns.TavernsMod;
 
 import java.util.ArrayList;
