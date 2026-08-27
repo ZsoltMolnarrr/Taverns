@@ -10,7 +10,6 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent;
-import net.neoforged.neoforge.event.village.VillagerTradesEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import net.village_taverns.TavernsMod;
 import net.village_taverns.TavernBrewing;
@@ -24,8 +23,6 @@ public final class NeoForgeMod {
         modBus.addListener(RegisterEvent.class, NeoForgeMod::register);
         // Tavern blocks into the vanilla Functional tab — NeoForge mod-bus event (replaces ItemGroupEvents).
         modBus.addListener(BuildCreativeModeTabContentsEvent.class, NeoForgeMod::buildTabContents);
-        // Villager trades — game-bus event (fired per profession); replaces Fabric API's TradeOfferHelper.
-        NeoForge.EVENT_BUS.addListener(VillagerTradesEvent.class, NeoForgeMod::onVillagerTrades);
         // Brewing recipes - game-bus event, fired after BrewingRecipeRegistry.registerDefaults and
         // before build(), so our recipes append after vanilla's. Replaces Fabric API's BUILD event.
         NeoForge.EVENT_BUS.addListener(RegisterBrewingRecipesEvent.class, NeoForgeMod::onRegisterBrewingRecipes);
@@ -68,15 +65,4 @@ public final class NeoForgeMod {
         }
     }
 
-    private static void onVillagerTrades(VillagerTradesEvent event) {
-        if (event.getType() != TavernVillagers.BARTENDER_PROFESSION_KEY) {
-            return;
-        }
-        TavernVillagers.TRADES.forEach((tier, factories) -> {
-            var tierList = event.getTrades().get(tier.intValue());
-            if (tierList != null) {
-                tierList.addAll(factories);
-            }
-        });
-    }
 }

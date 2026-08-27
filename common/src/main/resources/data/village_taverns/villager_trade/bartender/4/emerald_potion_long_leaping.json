@@ -1,0 +1,47 @@
+{
+  "fabric:load_conditions": [
+    {
+      "condition": "fabric:not",
+      "value": {
+        "condition": "fabric:any_mods_loaded",
+        "values": [
+          "spell_power",
+          "critical_strike"
+        ]
+      }
+    }
+  ],
+  "neoforge:conditions": [
+    {
+      "type": "neoforge:not",
+      "value": {
+        "type": "neoforge:or",
+        "values": [
+          {
+            "type": "neoforge:mod_loaded",
+            "modid": "spell_power"
+          },
+          {
+            "type": "neoforge:mod_loaded",
+            "modid": "critical_strike"
+          }
+        ]
+      }
+    }
+  ],
+  "gives": {
+    "id": "minecraft:potion",
+    "components": {
+      "minecraft:potion_contents": {
+        "potion": "minecraft:long_leaping"
+      }
+    }
+  },
+  "max_uses": 3.0,
+  "reputation_discount": 0.05,
+  "wants": {
+    "id": "minecraft:emerald",
+    "count": 32.0
+  },
+  "xp": 30.0
+}

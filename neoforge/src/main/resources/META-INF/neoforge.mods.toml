@@ -34,7 +34,7 @@ versionRange = "[${structure_pool_api_version},)"
 ordering = "NONE"
 side = "BOTH"
 
-# Jar-in-jar'd (see neoforge/build.gradle `include(modImplementation(...))`); declared so the
+# Jar-in-jar'd (see neoforge/build.gradle `include(implementation(...))`); declared so the
 # dependency is explicit rather than only implied by the bundled jar.
 [[dependencies.village_taverns]]
 modId = "tiny_config"

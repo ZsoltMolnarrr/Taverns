@@ -1,0 +1,17 @@
+{
+  "gives": {
+    "id": "minecraft:potion",
+    "components": {
+      "minecraft:potion_contents": {
+        "potion": "minecraft:strength"
+      }
+    }
+  },
+  "max_uses": 3.0,
+  "reputation_discount": 0.05,
+  "wants": {
+    "id": "minecraft:emerald",
+    "count": 16.0
+  },
+  "xp": 20.0
+}

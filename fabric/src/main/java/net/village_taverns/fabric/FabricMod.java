@@ -1,10 +1,9 @@
 package net.village_taverns.fabric;
 
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.fabricmc.fabric.api.object.builder.v1.trade.TradeOfferHelper;
-import net.fabricmc.fabric.api.object.builder.v1.world.poi.PointOfInterestHelper;
-import net.fabricmc.fabric.api.registry.FabricBrewingRecipeRegistryBuilder;
+import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
+import net.fabricmc.fabric.api.object.builder.v1.world.poi.PoiHelper;
+import net.fabricmc.fabric.api.registry.FabricPotionBrewingBuilder;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.village_taverns.TavernBrewing;
 import net.village_taverns.TavernVillagers;
@@ -17,23 +16,23 @@ public final class FabricMod implements ModInitializer {
         TavernsMod.init();
         TavernsMod.registerBlocks();
 
-        // Villager POI + schedule + profession + trades — Fabric API (loader-specific).
-        PointOfInterestHelper.register(TavernVillagers.PROFESSION_ID,
+        // Villager POI + schedule + profession — Fabric API (loader-specific).
+        // 26.1: `TradeOfferHelper` is gone, trades are data (`data/village_taverns/villager_trade/**`).
+        PoiHelper.register(TavernVillagers.PROFESSION_ID,
                 TavernVillagers.POI_TICKET_COUNT, TavernVillagers.POI_SEARCH_DISTANCE,
                 TavernVillagers.poiBlockStates());
         TavernVillagers.registerSchedule(); // the always-work EnvironmentAttribute<Activity>
-        TavernVillagers.registerProfession(); // registers the bartender profession + builds TRADES
-        TavernVillagers.TRADES.forEach((tier, factories) ->
-                TradeOfferHelper.registerVillagerOffers(TavernVillagers.BARTENDER_PROFESSION_KEY, tier,
-                        list -> list.addAll(factories)));
+        TavernVillagers.registerProfession(); // bartender profession + its per-level trade-set keys
 
         // Brewing recipes for the SpellPower / RangedWeaponAPI potions - Fabric API.
+        // 26.1: `FabricBrewingRecipeRegistryBuilder` -> `FabricPotionBrewingBuilder` (same BUILD event,
+        // same `PotionBrewing.Builder` callback argument).
         // Fired per-world when the registry is built, long after the Potions <clinit> mixin has
         // registered them, so lookups in TavernBrewing always resolve.
-        FabricBrewingRecipeRegistryBuilder.BUILD.register(TavernBrewing::register);
+        FabricPotionBrewingBuilder.BUILD.register(TavernBrewing::register);
 
         // Creative-tab placement (vanilla Functional tab) — Fabric API.
-        ItemGroupEvents.modifyEntriesEvent(CreativeModeTabs.FUNCTIONAL_BLOCKS).register((content) -> {
+        CreativeModeTabEvents.modifyOutputEvent(CreativeModeTabs.FUNCTIONAL_BLOCKS).register((content) -> {
             for (var entry : TavernBlocks.all) {
                 content.accept(entry.item());
             }

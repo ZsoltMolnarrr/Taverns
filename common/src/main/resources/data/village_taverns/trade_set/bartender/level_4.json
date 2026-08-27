@@ -1,0 +1,5 @@
+{
+  "amount": 2.0,
+  "random_sequence": "village_taverns:trade_set/bartender/level_4",
+  "trades": "#village_taverns:bartender/level_4"
+}

@@ -1,0 +1,36 @@
+{
+  "values": [
+    {
+      "id": "village_taverns:bartender/3/emerald_potion_spell_power_arcane",
+      "required": false
+    },
+    {
+      "id": "village_taverns:bartender/3/emerald_potion_spell_power_fire",
+      "required": false
+    },
+    {
+      "id": "village_taverns:bartender/3/emerald_potion_spell_power_frost",
+      "required": false
+    },
+    {
+      "id": "village_taverns:bartender/3/emerald_potion_spell_power_healing",
+      "required": false
+    },
+    {
+      "id": "village_taverns:bartender/3/emerald_potion_ranged_weapon_damage",
+      "required": false
+    },
+    {
+      "id": "village_taverns:bartender/3/emerald_potion_harming",
+      "required": false
+    },
+    {
+      "id": "village_taverns:bartender/3/emerald_potion_night_vision",
+      "required": false
+    },
+    {
+      "id": "village_taverns:bartender/3/emerald_potion_weakness",
+      "required": false
+    }
+  ]
+}

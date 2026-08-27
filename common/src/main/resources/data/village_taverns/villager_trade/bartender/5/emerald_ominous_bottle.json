@@ -1,0 +1,12 @@
+{
+  "gives": {
+    "id": "minecraft:ominous_bottle"
+  },
+  "max_uses": 1.0,
+  "reputation_discount": 0.05,
+  "wants": {
+    "id": "minecraft:emerald",
+    "count": 60.0
+  },
+  "xp": 40.0
+}

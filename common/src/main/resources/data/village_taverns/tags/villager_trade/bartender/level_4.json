@@ -1,0 +1,32 @@
+{
+  "values": [
+    {
+      "id": "village_taverns:bartender/4/emerald_potion_spell_power_critical_chance",
+      "required": false
+    },
+    {
+      "id": "village_taverns:bartender/4/emerald_potion_spell_power_critical_damage",
+      "required": false
+    },
+    {
+      "id": "village_taverns:bartender/4/emerald_potion_critical_strike_chance",
+      "required": false
+    },
+    {
+      "id": "village_taverns:bartender/4/emerald_potion_critical_strike_damage",
+      "required": false
+    },
+    {
+      "id": "village_taverns:bartender/4/emerald_potion_long_regeneration",
+      "required": false
+    },
+    {
+      "id": "village_taverns:bartender/4/emerald_potion_long_leaping",
+      "required": false
+    },
+    {
+      "id": "village_taverns:bartender/4/emerald_potion_water_breathing",
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "values": [
+    {
+      "id": "village_taverns:bartender/5/emerald_potion_spell_power_haste",
+      "required": false
+    },
+    {
+      "id": "village_taverns:bartender/5/emerald_potion_ranged_weapon_haste",
+      "required": false
+    },
+    "village_taverns:bartender/5/emerald_ominous_bottle",
+    "village_taverns:bartender/5/emerald_potion_long_fire_resistance"
+  ]
+}
