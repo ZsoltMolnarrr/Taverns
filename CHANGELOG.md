@@ -1,5 +1,6 @@
 # 1.3.0
 
+- Updated for Minecraft 26.1.2 (Java 25)
 - Added brewing recipes for all Spell Power and Ranged Weapon potions, previously these were only obtainable from bartender trades
 - Spell Power potions brew from Thick potion (Water Bottle + Glowstone Dust):
   - Arcane Power - Amethyst Shard
