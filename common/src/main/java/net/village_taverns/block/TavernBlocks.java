@@ -3,7 +3,7 @@ package net.village_taverns.block;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.MapColor;
-import net.minecraft.block.enums.NoteBlockInstrument;
+import net.minecraft.block.enums.Instrument;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
@@ -34,18 +34,25 @@ public class TavernBlocks {
     public static final Entry BARREL = entry(BrewTapBlock.NAME, new BrewTapBlock(
             AbstractBlock.Settings.create()
                 .mapColor(MapColor.OAK_TAN)
-                .instrument(NoteBlockInstrument.BASS)
+                .instrument(Instrument.BASS)
                 .strength(2.5F)
                 .sounds(BlockSoundGroup.WOOD)
                 .nonOpaque()
     ));
 
+    /// Blocks only. Forge 47 unfreezes exactly one registry per `RegisterEvent` window, so the
+    /// `BlockItem`s are registered separately from #registerItems().
     public static void register() {
         for (var entry : all) {
-            Registry.register(Registries.BLOCK, Identifier.of(TavernsMod.ID, entry.name), entry.block);
-            Registry.register(Registries.ITEM, Identifier.of(TavernsMod.ID, entry.name), entry.item());
+            Registry.register(Registries.BLOCK, new Identifier(TavernsMod.ID, entry.name), entry.block);
+        }
+    }
+
+    public static void registerItems() {
+        for (var entry : all) {
+            Registry.register(Registries.ITEM, new Identifier(TavernsMod.ID, entry.name), entry.item());
         }
         // Creative-tab placement (vanilla Functional tab) is wired per-platform from each loader's
-        // entrypoint (Fabric ItemGroupEvents / NeoForge BuildCreativeModeTabContentsEvent), iterating `all`.
+        // entrypoint (Fabric ItemGroupEvents / Forge BuildCreativeModeTabContentsEvent), iterating `all`.
     }
 }

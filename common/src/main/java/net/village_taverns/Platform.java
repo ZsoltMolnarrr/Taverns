@@ -8,10 +8,9 @@ import dev.architectury.injectables.annotations.ExpectPlatform;
 /// so `common` needs no loader API and the check is resolved statically (no mutable global to install).
 public class Platform {
     public interface Util {
-        /// Whether another mod is present. Fabric: `FabricLoader.isModLoaded`; NeoForge: the exact same
-        /// `LoadingModList.get().getModFileById(modid) != null` SpellEngine uses — populated during mod
-        /// discovery (before any constructor runs), so early gates (e.g. the Potions `<clinit>` mixin)
-        /// read a correct answer.
+        /// Whether another mod is present. Fabric: `FabricLoader.isModLoaded`; Forge:
+        /// `LoadingModList.get().getModFileById(modid) != null` — populated during mod discovery
+        /// (before any constructor runs), so early gates read a correct answer.
         boolean isModLoaded(String modid);
     }
 

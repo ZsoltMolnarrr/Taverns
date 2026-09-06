@@ -1,3 +1,7 @@
+# 1.3.0.001
+
+- Ported to Minecraft 1.20.1 (Fabric + Forge 47).
+
 # 1.3.0
 
 - Added brewing recipes for all Spell Power and Ranged Weapon potions, previously these were only obtainable from bartender trades

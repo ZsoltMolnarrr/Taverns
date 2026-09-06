@@ -3,10 +3,9 @@ package net.village_taverns.block;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
-import net.minecraft.item.Item;
+import net.minecraft.client.item.TooltipContext;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.state.property.Properties;
@@ -26,7 +25,7 @@ import java.util.List;
 
 public class BrewTapBlock extends Block {
     public static final String NAME = "barrel";
-    public static final Identifier ID = Identifier.of(TavernsMod.ID, NAME);
+    public static final Identifier ID = new Identifier(TavernsMod.ID, NAME);
 
     public BrewTapBlock(Settings settings) {
         super(settings);
@@ -35,8 +34,8 @@ public class BrewTapBlock extends Block {
 
 
     @Override
-    public void appendTooltip(ItemStack stack, Item.TooltipContext context, List<Text> tooltip, TooltipType options) {
-        super.appendTooltip(stack, context, tooltip, options);
+    public void appendTooltip(ItemStack stack, @Nullable BlockView world, List<Text> tooltip, TooltipContext options) {
+        super.appendTooltip(stack, world, tooltip, options);
         tooltip.add(Text.translatable("block." + ID.getNamespace() + "." + ID.getPath() +".hint").formatted(Formatting.GRAY, Formatting.ITALIC));
     }
 
@@ -56,11 +55,13 @@ public class BrewTapBlock extends Block {
         builder.add(FACING);
     }
 
-    protected BlockState rotate(BlockState state, BlockRotation rotation) {
+    @Override
+    public BlockState rotate(BlockState state, BlockRotation rotation) {
         return (BlockState)state.with(FACING, rotation.rotate((Direction)state.get(FACING)));
     }
 
-    protected BlockState mirror(BlockState state, BlockMirror mirror) {
+    @Override
+    public BlockState mirror(BlockState state, BlockMirror mirror) {
         return state.rotate(mirror.getRotation((Direction)state.get(FACING)));
     }
 

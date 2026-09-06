@@ -2,9 +2,7 @@ package net.village_taverns;
 
 import net.minecraft.item.Item;
 import net.minecraft.potion.Potion;
-import net.minecraft.recipe.BrewingRecipeRegistry;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.Identifier;
 import net.village_taverns.config.BrewingConfig;
 import org.jetbrains.annotations.Nullable;
@@ -13,28 +11,48 @@ import org.slf4j.LoggerFactory;
 
 /// Applies the brewing recipes from [BrewingConfig] to the game's brewing registry.
 ///
-/// Without these, the SpellPower / RangedWeaponAPI potions that
-/// [net.village_taverns.mixin.PotionsMixin] causes to be registered are obtainable only from the
-/// bartender's trade table — there is no survival brewing path for any of them.
+/// Without these, the SpellPower / RangedWeaponAPI potions Taverns asks those mods to register are
+/// obtainable only from the bartender's trade table — there is no survival brewing path for any of them.
 ///
-/// Brewing in 1.21.1 is **code-registered, not datapack-driven**: no recipe type, no serializer, and
-/// so nothing for datagen to emit. The recipe list therefore lives in a TinyConfig file
+/// Brewing is **code-registered, not datapack-driven**: no recipe type, no serializer, and so nothing
+/// for datagen to emit. The recipe list therefore lives in a TinyConfig file
 /// (`config/village_taverns/brewing.json`) rather than in `data/`, which is what gives pack authors
 /// the reach a datapack would normally have. This class only resolves ids and forwards them.
 ///
-/// Only vanilla API is used here, so this stays in `common` — each loader merely hands us its
-/// builder, which is the *same vanilla class* on both:
-/// - Fabric: `FabricBrewingRecipeRegistryBuilder.BUILD`
-/// - NeoForge: `RegisterBrewingRecipesEvent` (game bus, posted after `registerDefaults` and before
-///   `build()`, so our recipes append after vanilla's and vanilla wins any conflicting pair)
+/// **1.20.1 delta:** there is no `BrewingRecipeRegistry.Builder` and no per-world rebuild. 1.20.1's
+/// brewing recipes are a static list filled once during bootstrap, and vanilla's
+/// `registerPotionRecipe` is private — so each loader supplies its own [Registrar] and this class
+/// only resolves ids:
+/// - Fabric: `FabricBrewingRecipeRegistry.registerPotionRecipe`, called from the mod initializer
+///   (which runs after `Bootstrap.initialize`, hence after the potions exist).
+/// - Forge: a `net.minecraftforge.common.brewing.IBrewingRecipe`, added from `FMLCommonSetupEvent`
+///   (after the `RegisterEvent` phase that registers the potions). Forge routes the brewing stand
+///   through its own registry, so the vanilla list is not an option there anyway.
+///
+/// Registration happens after vanilla's, so a `base` + `ingredient` pair vanilla also defines keeps
+/// vanilla's result (both loaders return the first match).
 public class TavernBrewing {
     private static final Logger LOGGER = LoggerFactory.getLogger(TavernsMod.ID);
 
-    public static void register(BrewingRecipeRegistry.Builder builder) {
-        // safeValue(), not value: this fires per world load rather than from init(), so it must not
-        // depend on TavernsMod.init() having refreshed first. safeValue() double-checks the loaded
-        // flag under a monitor and refreshes if needed, so a concurrent first access cannot observe
-        // a half-loaded config.
+    /// What a loader does with one resolved recipe. Fabric hands this to Fabric API; Forge wraps it
+    /// in an `IBrewingRecipe`.
+    @FunctionalInterface
+    public interface Registrar {
+        void register(Potion base, Item ingredient, Potion result);
+    }
+
+    private static boolean registered = false;
+
+    /// Idempotent: the recipe list is static and survives world reloads, so a second call would only
+    /// duplicate entries.
+    public static void register(Registrar registrar) {
+        if (registered) {
+            return;
+        }
+        registered = true;
+
+        // safeValue(), not value: double-checks the loaded flag under a monitor and refreshes if
+        // needed, so this cannot observe a half-loaded config even if init() has not run yet.
         var config = TavernsMod.brewingConfig.safeValue();
         // Still null-checked: an empty or blank brewing.json makes Gson.fromJson return null, which
         // load() then stores as the value.
@@ -42,7 +60,7 @@ public class TavernBrewing {
             return;
         }
 
-        var registered = 0;
+        var count = 0;
         // Recipes naming a potion nobody registered. Counted rather than logged per-line: this is the
         // expected, uninteresting case when SpellPower or RangedWeaponAPI simply is not installed.
         var unresolvedPotions = 0;
@@ -67,30 +85,28 @@ public class TavernBrewing {
                 continue;
             }
 
-            builder.registerPotionRecipe(base, ingredient, result);
-            registered++;
+            registrar.register(base, ingredient, result);
+            count++;
         }
 
         if (unresolvedPotions > 0) {
             LOGGER.info("Registered {} brewing recipes, skipped {} naming an unregistered potion "
-                    + "(expected when SpellPower / RangedWeaponAPI are absent)", registered, unresolvedPotions);
+                    + "(expected when SpellPower / RangedWeaponAPI are absent)", count, unresolvedPotions);
         } else {
-            LOGGER.info("Registered {} brewing recipes", registered);
+            LOGGER.info("Registered {} brewing recipes", count);
         }
     }
 
     /// Null when the id is malformed or the potion is unregistered — the latter being the normal
     /// case when the owning mod is absent. Mirrors `TavernVillagers.createPotionStack`.
     @Nullable
-    private static RegistryEntry<Potion> potion(String potionId) {
+    private static Potion potion(String potionId) {
         var id = Identifier.tryParse(potionId);
         if (id == null) {
             LOGGER.warn("Brewing config: malformed potion id '{}', skipping", potionId);
             return null;
         }
-        return Registries.POTION.getEntry(id)
-                .map(reference -> (RegistryEntry<Potion>) reference)
-                .orElse(null);
+        return Registries.POTION.getOrEmpty(id).orElse(null);
     }
 
     @Nullable

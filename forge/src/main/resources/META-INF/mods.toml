@@ -1,0 +1,46 @@
+modLoader = "javafml"
+loaderVersion = "[47,)"
+issueTrackerURL = "https://github.com/ZsoltMolnarrr/Taverns/issues"
+license = "All Rights Reserved"
+
+[[mods]]
+modId = "village_taverns"
+version = "${version}"
+displayName = "Village Taverns (RPG Series)"
+authors = "Daedelus"
+description = '''
+Find cozy taverns in villages, have a drink, and maybe some rest.
+'''
+logoFile = "icon.png"
+
+[[dependencies.village_taverns]]
+modId = "forge"
+mandatory = true
+versionRange = "[47,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.village_taverns]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[1.20.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+# StructurePoolAPI has no Forge artifact on 1.20.1, so it is not a dependency here at all; taverns
+# reach Forge villages only through the data-driven Lithostitched worldgen modifiers.
+# Optional dependency blocks MUST carry an explicit versionRange -- Forge 47 aborts the boot with
+# "Unsupported installed optional dependencies ... Expected range: ''" otherwise.
+[[dependencies.village_taverns]]
+modId = "spell_power"
+mandatory = false
+versionRange = "[1.0,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.village_taverns]]
+modId = "ranged_weapon_api"
+mandatory = false
+versionRange = "[1.0,)"
+ordering = "NONE"
+side = "BOTH"

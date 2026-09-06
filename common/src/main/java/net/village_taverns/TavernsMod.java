@@ -1,25 +1,17 @@
 package net.village_taverns;
 
-import net.fabric_extras.structure_pool.api.StructurePoolAPI;
-import net.fabric_extras.structure_pool.api.StructurePoolConfig;
 import net.tiny_config.ConfigManager;
 import net.village_taverns.block.TavernBlocks;
 import net.village_taverns.config.BrewingConfig;
 import net.village_taverns.config.Defaults;
+import net.village_taverns.village.VillageStructures;
 
 public class TavernsMod {
 
     public static final String ID = "village_taverns";
 
-    public static ConfigManager<StructurePoolConfig> villageConfig = new ConfigManager<>
-            ("villages", Defaults.villages)
-            .builder()
-            .setDirectory(ID)
-            .sanitize(true)
-            .build();
-
     /// Brewing recipes for the SpellPower / RangedWeaponAPI potions. Config-driven because brewing
-    /// has no datapack path in 1.21.1 — see [BrewingConfig]. Versioned, so bumping
+    /// has no datapack path in 1.20.1 — see [BrewingConfig]. Versioned, so bumping
     /// [BrewingConfig#SCHEMA_VERSION] regenerates stale files instead of leaving players on an old
     /// recipe list.
     public static ConfigManager<BrewingConfig> brewingConfig = new ConfigManager<>
@@ -31,18 +23,19 @@ public class TavernsMod {
             .build();
 
     public static void init() {
-        villageConfig.refresh();
-        // Refreshed here, not at brewing-registry build time: the registry is rebuilt per world load,
-        // and re-reading the file on each of those would let a mid-session edit apply inconsistently.
+        // Refreshed here, not at brewing-registration time, so a mid-session edit cannot apply
+        // half-way through.
         brewingConfig.refresh();
-        if (!Platform.util().isModLoaded("lithostitched")) {
-            // Only inject the village if the Lithostitched is not present
-            StructurePoolAPI.injectAll(villageConfig.value);
-        }
-        villageConfig.save();
+        // Fabric-only on 1.20.1 (StructurePoolAPI has no Forge artifact); a no-op on Forge, where the
+        // Lithostitched worldgen modifiers are the only injection path.
+        VillageStructures.injectIfAvailable();
     }
 
     public static void registerBlocks() {
         TavernBlocks.register();
+    }
+
+    public static void registerBlockItems() {
+        TavernBlocks.registerItems();
     }
 }
