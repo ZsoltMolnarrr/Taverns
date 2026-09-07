@@ -141,9 +141,9 @@ public class TavernVillagers {
         var trades_level_5 = new ArrayList<TradeOffers.Factory>();
         addIfNotNull(trades_level_5, potionOffer("spell_power:spell_power.haste", POTION_PRICE_T4, 1, 3, 30));
         addIfNotNull(trades_level_5, potionOffer("ranged_weapon:ranged_weapon.haste", POTION_PRICE_T4, 1, 3, 30));
-        // 1.20.1 has no Ominous Bottle (added in 1.20.5). The Bottle o' Enchanting is the closest
-        // in-theme "bottled effect" a tavern would plausibly stock at the top tier.
-        trades_level_5.add(sell(new ItemStack(Items.EXPERIENCE_BOTTLE), 60, 1, 1, 40));
+        // 1.20.1 sacrifice: 1.21.1's tier-5 Ominous Bottle offer has no counterpart here — the item
+        // was added in 1.20.5. The offer is dropped rather than substituted, so the 1.20.1 bartender's
+        // top tier has one fewer trade than on 1.21.1. Deliberate; do not fill it with a stand-in.
         trades_level_5.add(potionOffer(Potions.LONG_FIRE_RESISTANCE, POTION_PRICE_T4, 1, 3, 40));
         TRADES.put(5, trades_level_5);
     }
