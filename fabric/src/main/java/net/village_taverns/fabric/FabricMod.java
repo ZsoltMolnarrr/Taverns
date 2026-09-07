@@ -11,14 +11,11 @@ import net.village_taverns.TavernBrewing;
 import net.village_taverns.TavernVillagers;
 import net.village_taverns.TavernsMod;
 import net.village_taverns.block.TavernBlocks;
-import net.village_taverns.fabric.village.FabricVillageStructures;
 
 public final class FabricMod implements ModInitializer {
     @Override
     public void onInitialize() {
-        // StructurePoolAPI is Fabric-only on 1.20.1; install the village injector (and load its config)
-        // before TavernsMod.init() calls VillageStructures.injectIfAvailable().
-        FabricVillageStructures.install();
+        // Common init also queues the vanilla-village structure injection (StructurePoolAPI).
         TavernsMod.init();
         TavernsMod.registerBlocks();
         TavernsMod.registerBlockItems();

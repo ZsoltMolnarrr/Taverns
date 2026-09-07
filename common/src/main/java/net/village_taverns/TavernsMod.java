@@ -1,10 +1,11 @@
 package net.village_taverns;
 
+import net.fabric_extras.structure_pool.api.StructurePoolAPI;
+import net.fabric_extras.structure_pool.api.StructurePoolConfig;
 import net.tiny_config.ConfigManager;
 import net.village_taverns.block.TavernBlocks;
 import net.village_taverns.config.BrewingConfig;
 import net.village_taverns.config.Defaults;
-import net.village_taverns.village.VillageStructures;
 
 public class TavernsMod {
 
@@ -22,13 +23,30 @@ public class TavernsMod {
             .schemaVersion(BrewingConfig.SCHEMA_VERSION)
             .build();
 
+    public static ConfigManager<StructurePoolConfig> villageConfig = new ConfigManager<>
+            ("villages", Defaults.villages)
+            .builder()
+            .setDirectory(ID)
+            .sanitize(true)
+            .build();
+
     public static void init() {
         // Refreshed here, not at brewing-registration time, so a mid-session edit cannot apply
         // half-way through.
         brewingConfig.refresh();
-        // Fabric-only on 1.20.1 (StructurePoolAPI has no Forge artifact); a no-op on Forge, where the
-        // Lithostitched worldgen modifiers are the only injection path.
-        VillageStructures.injectIfAvailable();
+
+        villageConfig.refresh();
+        if (!Platform.util().isModLoaded("lithostitched")) {
+            // Only inject the tavern if Lithostitched is not present - otherwise the data-driven
+            // worldgen modifiers in `data/village_taverns/lithostitched/` already do it.
+            //
+            // `injectAll` only *queues* the entries; StructurePoolAPI's own entrypoint applies them
+            // when the server starts (Fabric SERVER_STARTING / Forge ServerAboutToStartEvent, both
+            // before the spawn region generates). The queue is deliberately never cleared, so this
+            // must be called exactly once, here at mod init - never per world load.
+            StructurePoolAPI.injectAll(villageConfig.value);
+        }
+        villageConfig.save();
     }
 
     public static void registerBlocks() {

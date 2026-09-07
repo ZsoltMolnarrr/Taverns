@@ -27,8 +27,15 @@ versionRange = "[1.20.1,)"
 ordering = "NONE"
 side = "BOTH"
 
-# StructurePoolAPI has no Forge artifact on 1.20.1, so it is not a dependency here at all; taverns
-# reach Forge villages only through the data-driven Lithostitched worldgen modifiers.
+# StructurePoolAPI injects the tavern into the *vanilla* village pools. Since 1.2.1 it has a Forge
+# artifact, so this is a hard dependency on both loaders (mirrors the `fabric.mod.json` entry).
+[[dependencies.village_taverns]]
+modId = "structure_pool_api"
+mandatory = true
+versionRange = "[1.2.1,)"
+ordering = "NONE"
+side = "BOTH"
+
 # Optional dependency blocks MUST carry an explicit versionRange -- Forge 47 aborts the boot with
 # "Unsupported installed optional dependencies ... Expected range: ''" otherwise.
 [[dependencies.village_taverns]]

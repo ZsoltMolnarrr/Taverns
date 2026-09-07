@@ -34,7 +34,9 @@ dependencies {
     // compile classpath matches the 1.21.1 line and costs nothing.
     modCompileOnly("net.critical_strike:critical_strike-${platform}:${rootProject.critical_strike_version}")
 
-    // StructurePoolAPI is NOT here: the only 1.20.1 artifact is a Fabric jar, so village-pool injection
-    // lives behind the `net.village_taverns.village.VillageStructures` seam and its only implementation
-    // is wired from the Fabric entrypoint.
+    // StructurePoolAPI 1.2.1+ ships a Forge artifact too, and its `injectAll` touches no loader API,
+    // so the village injection and the `config/village_taverns/villages.json` config live here in
+    // `common`. The `-common` artifact carries the whole API surface and no loader dependency.
+    // NOT JiJ'd: it is a standalone library mod the player installs.
+    modImplementation("net.foundation:structure_pool_api-common:${rootProject.structure_pool_api_version}")
 }
