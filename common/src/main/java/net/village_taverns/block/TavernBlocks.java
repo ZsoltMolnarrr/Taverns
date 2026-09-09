@@ -19,6 +19,11 @@ public class TavernBlocks {
         public Entry(String name, Block block) {
             this(name, block, new BlockItem(block, new Item.Settings()));
         }
+
+        /// The id the block and its `BlockItem` are both registered under.
+        public Identifier id() {
+            return new Identifier(TavernsMod.ID, name);
+        }
     }
 
     public static final ArrayList<Entry> all = new ArrayList<>();
@@ -40,17 +45,17 @@ public class TavernBlocks {
                 .nonOpaque()
     ));
 
-    /// Blocks only. Forge 47 unfreezes exactly one registry per `RegisterEvent` window, so the
-    /// `BlockItem`s are registered separately from #registerItems().
+    /// Blocks only. Forge opens exactly one registry per `RegisterEvent` window, so the `BlockItem`s are
+    /// registered separately from #registerItems().
     public static void register() {
         for (var entry : all) {
-            Registry.register(Registries.BLOCK, new Identifier(TavernsMod.ID, entry.name), entry.block);
+            Registry.register(Registries.BLOCK, entry.id(), entry.block());
         }
     }
 
     public static void registerItems() {
         for (var entry : all) {
-            Registry.register(Registries.ITEM, new Identifier(TavernsMod.ID, entry.name), entry.item());
+            Registry.register(Registries.ITEM, entry.id(), entry.item());
         }
         // Creative-tab placement (vanilla Functional tab) is wired per-platform from each loader's
         // entrypoint (Fabric ItemGroupEvents / Forge BuildCreativeModeTabContentsEvent), iterating `all`.

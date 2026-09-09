@@ -33,14 +33,16 @@ public class TavernVillagers {
     public static final String ALWAYS_WORK = "always_work";
     public static final Schedule ALWAYS_WORK_SCHEDULE = new ScheduleBuilder(new Schedule())
             .withActivity(50, Activity.WORK).withActivity(23950, Activity.REST).build();
+    public static final Identifier SCHEDULE_ID = new Identifier(TavernsMod.ID, ALWAYS_WORK);
+    /// Also the POI id: the bartender's workstation POI is registered under the same id as the profession.
     public static final Identifier PROFESSION_ID = new Identifier(TavernsMod.ID, BARTENDER);
     public static final int POI_TICKET_COUNT = 1;
     public static final int POI_SEARCH_DISTANCE = 12;
     @Nullable public static VillagerProfession BAR_TENDER_PROFESSION;
 
     /// The bartender's workstation (brew-tap barrel) block states for the POI. Registration itself is
-    /// loader-specific (Fabric: `PointOfInterestHelper`; Forge: a plain `Registry.register` of a
-    /// `PointOfInterestType`) and lives in each platform's entrypoint; this only exposes the shared state set.
+    /// loader-specific (Fabric: `PointOfInterestHelper`; Forge: a `PointOfInterestType` handed to the
+    /// `RegisterEvent` helper) and lives in each platform's entrypoint; this only exposes the shared state set.
     public static Set<BlockState> poiBlockStates() {
         return ImmutableSet.copyOf(TavernBlocks.BARREL.block().getStateManager().getStates());
     }
@@ -73,18 +75,42 @@ public class TavernVillagers {
     /// Registers the bartender's always-work schedule. Loader-neutral vanilla registry insert; called
     /// from each platform's entrypoint (Fabric directly; Forge in the SCHEDULE `RegisterEvent` window).
     public static void registerSchedule() {
-        Registry.register(Registries.SCHEDULE, new Identifier(TavernsMod.ID, ALWAYS_WORK), ALWAYS_WORK_SCHEDULE);
+        Registry.register(Registries.SCHEDULE, SCHEDULE_ID, ALWAYS_WORK_SCHEDULE);
+    }
+
+    private static VillagerProfession bartenderProfession;
+
+    /// Builds the bartender profession once, keyed by #PROFESSION_ID. Creation only — nothing is
+    /// registered here, so a loader that registers the profession itself hands this to its own
+    /// registration API instead of duplicating the construction.
+    public static VillagerProfession professionToRegister() {
+        if (bartenderProfession == null) {
+            bartenderProfession = createProfession(
+                    BARTENDER,
+                    RegistryKey.of(RegistryKeys.POINT_OF_INTEREST_TYPE, PROFESSION_ID));
+        }
+        return bartenderProfession;
+    }
+
+    /// Reads #BAR_TENDER_PROFESSION back out of the registry, for a loader that registered the
+    /// profession itself. `VillagerTradesEvent` filters on that field and Forge's `RegisterEvent` helper
+    /// returns void, so Forge calls this straight after its registration loop. Throws if the profession is
+    /// missing — which is also what catches a silently mis-keyed `event.register` block.
+    public static void linkProfessionEntry() {
+        if (BAR_TENDER_PROFESSION == null) {
+            BAR_TENDER_PROFESSION = Registries.VILLAGER_PROFESSION
+                    .getOrEmpty(PROFESSION_ID)
+                    .orElseThrow(() -> new IllegalStateException(
+                            "Villager profession " + PROFESSION_ID + " is not in the registry — register it first"));
+        }
     }
 
     /// Registers the bartender profession and builds the trade table. Loader-neutral. Trade-offer
     /// wiring is loader-specific and lives in each platform's entrypoint (Fabric `TradeOfferHelper` /
     /// Forge `VillagerTradesEvent`), consuming the shared #TRADES map this populates via setupTrades().
     public static void registerProfession() {
-        var profession = createProfession(
-                BARTENDER,
-                RegistryKey.of(RegistryKeys.POINT_OF_INTEREST_TYPE, PROFESSION_ID));
-        Registry.register(Registries.VILLAGER_PROFESSION, PROFESSION_ID, profession);
-        BAR_TENDER_PROFESSION = profession;
+        BAR_TENDER_PROFESSION = Registry.register(
+                Registries.VILLAGER_PROFESSION, PROFESSION_ID, professionToRegister());
 
         setupTrades();
     }

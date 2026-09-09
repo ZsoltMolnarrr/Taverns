@@ -1,8 +1,8 @@
 package net.village_taverns.forge;
 
 import net.minecraft.item.ItemGroups;
+import net.minecraft.potion.Potion;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.world.poi.PointOfInterestType;
 import net.minecraftforge.api.distmarker.Dist;
@@ -25,15 +25,36 @@ import net.village_taverns.compat.RangedWeaponCompat;
 import net.village_taverns.compat.SpellPowerCompat;
 import net.village_taverns.forge.brewing.PotionBrewingRecipe;
 import net.village_taverns.forge.client.ForgeClientMod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Mod(TavernsMod.ID)
 public final class ForgeMod {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TavernsMod.ID);
 
     // FMLJavaModLoadingContext.get() is flagged for removal by late 47.x builds, but the
     // constructor-injected replacement doesn't exist on early 47.x; get() works on all of [47,).
     @SuppressWarnings("removal")
     public ForgeMod() {
         TavernsMod.init();
+
+        // RangedWeaponAPI's potions are opt-in, and this only *files* the request -- RangedWeaponAPI
+        // registers them itself, from its own RegisterEvent(POTIONS) window. Filing the request from our
+        // own POTION block below would race that: Forge posts the single POTION event to each mod's bus in
+        // turn and mods.toml declares `ordering = "NONE"`, so RangedWeaponAPI's block may already have run
+        // (and read an unset flag) by the time ours does, registering nothing at all with no error. The mod
+        // constructor runs before any RegisterEvent is posted to any bus, so it cannot lose that race.
+        // Before RangedWeaponAPI 2.3.4.008 the same call registered directly and threw "Can not register to
+        // a locked registry" straight into a bare `catch (Throwable t) {}` here, which is what hid it.
+        if (Platform.util().isModLoaded("ranged_weapon_api")) {
+            try {
+                RangedWeaponCompat.init();
+            } catch (Throwable t) {
+                LOGGER.error("Failed to request RangedWeaponAPI potions -- the brewing recipes and "
+                        + "bartender trades naming them will be skipped", t);
+            }
+        }
 
         var modBus = FMLJavaModLoadingContext.get().getModEventBus();
         // Explicit event class: Forge 47's plain addListener(Consumer) infers the event type from the
@@ -56,44 +77,77 @@ public final class ForgeMod {
         }
     }
 
-    /// Forge 47 unfreezes exactly one registry per `RegisterEvent` window, so every registry gets its own.
+    /// Registration is duplicated here rather than delegated to `common`'s registerX() methods, because a
+    /// plain `Registry.register` is not usable on this loader: Forge only clears the vanilla registry's own
+    /// lock from 47.4.0 onwards, so on 47.0-47.3 and NeoForge 1.20.1 it throws "Can not register to a locked
+    /// registry" even inside the correct `RegisterEvent` window. Our mods.toml declares
+    /// `loaderVersion = "[47,)"`, so those are supported configurations. The helper this event hands out is
+    /// the API every build of [47,) sanctions, so Forge iterates the same content `common` exposes and
+    /// registers it itself. `common` keeps its own vanilla-shaped registration for Fabric.
+    ///
+    /// `event.register` is a no-op unless its key matches the event's registry, so all six blocks are
+    /// declared unconditionally; Forge posts one event per registry and each block runs in exactly its own.
+    ///
+    /// There is no ITEM_GROUP block: the tavern blocks go into the vanilla Functional tab, wired from
+    /// `BuildCreativeModeTabContentsEvent` (see #buildTabContents).
     public static void register(RegisterEvent event) {
-        event.register(RegistryKeys.BLOCK, reg -> {
-            TavernsMod.registerBlocks();
+        event.register(RegistryKeys.BLOCK, helper -> {
+            for (var entry : TavernBlocks.all) {
+                helper.register(entry.id(), entry.block());
+            }
         });
-        event.register(RegistryKeys.ITEM, reg -> {
-            TavernsMod.registerBlockItems();
+
+        event.register(RegistryKeys.ITEM, helper -> {
+            for (var entry : TavernBlocks.all) {
+                helper.register(entry.id(), entry.item());
+            }
         });
-        event.register(RegistryKeys.POTION, reg -> {
-            // Replaces Fabric's `Potions.<clinit>` TAIL mixin: SpellPower and RangedWeaponAPI both
-            // register their potions opt-in, and this is the only window in which they may.
-            registerCompatPotions();
+
+        event.register(RegistryKeys.POTION, helper -> {
+            // Replaces Fabric's `Potions.<clinit>` TAIL mixin. RangedWeaponAPI is not handled here -- its
+            // potions are requested from the mod constructor and it registers them itself; see above.
+            registerSpellPowerPotions(helper);
         });
-        event.register(RegistryKeys.SCHEDULE, reg -> {
-            TavernVillagers.registerSchedule();
-        });
-        event.register(RegistryKeys.POINT_OF_INTEREST_TYPE, reg -> {
-            // POI registration — vanilla registry insert. Forge 47's PointOfInterestTypeCallbacks wires
-            // the block-state -> POI mapping from the type's block states, so no helper is needed.
-            Registry.register(Registries.POINT_OF_INTEREST_TYPE, TavernVillagers.PROFESSION_ID,
+
+        event.register(RegistryKeys.SCHEDULE, helper ->
+                helper.register(TavernVillagers.SCHEDULE_ID, TavernVillagers.ALWAYS_WORK_SCHEDULE));
+
+        event.register(RegistryKeys.POINT_OF_INTEREST_TYPE, helper -> {
+            // Forge 47's PointOfInterestTypeCallbacks wires the block-state -> POI mapping from the type's
+            // block states as the entry is added, so nothing else is needed here.
+            helper.register(TavernVillagers.PROFESSION_ID,
                     new PointOfInterestType(TavernVillagers.poiBlockStates(),
                             TavernVillagers.POI_TICKET_COUNT, TavernVillagers.POI_SEARCH_DISTANCE));
         });
-        event.register(RegistryKeys.VILLAGER_PROFESSION, reg -> {
-            TavernVillagers.registerProfession();
+
+        event.register(RegistryKeys.VILLAGER_PROFESSION, helper -> {
+            helper.register(TavernVillagers.PROFESSION_ID, TavernVillagers.professionToRegister());
+            // The helper returns void, so the field `VillagerTradesEvent` filters on is filled in afterwards.
+            TavernVillagers.linkProfessionEntry();
+            // Reads the POTION registry, which drained at event 11; villager_profession is event 28.
+            TavernVillagers.setupTrades();
         });
     }
 
-    private static void registerCompatPotions() {
-        if (Platform.util().isModLoaded("spell_power")) {
-            try {
-                SpellPowerCompat.init();
-            } catch (Throwable t) { }
+    /// Spell Power registers its own potions only when its `register_potions` config is on, so Taverns
+    /// writes them here instead -- iterating the creation-only map, exactly as `SpellPowerCompat.init()`
+    /// does on Fabric. Skips ids already present, so a player who *has* turned that config on does not get
+    /// a duplicate-key crash whichever mod's block ran first.
+    private static void registerSpellPowerPotions(RegisterEvent.RegisterHelper<Potion> helper) {
+        if (!Platform.util().isModLoaded("spell_power")) {
+            return;
         }
-        if (Platform.util().isModLoaded("ranged_weapon_api")) {
-            try {
-                RangedWeaponCompat.init();
-            } catch (Throwable t) { }
+        try {
+            SpellPowerCompat.potionsToRegister().forEach((id, potion) -> {
+                if (!Registries.POTION.containsId(id)) {
+                    helper.register(id, potion);
+                }
+            });
+        } catch (Throwable t) {
+            // Swallowed rather than fatal: a missing potion costs some brewing recipes and trades, not the
+            // server. Logged, though -- a bare catch here is what hid a broken RangedWeaponAPI request.
+            LOGGER.error("Failed to register Spell Power potions -- the brewing recipes and bartender "
+                    + "trades naming them will be skipped", t);
         }
     }
 
