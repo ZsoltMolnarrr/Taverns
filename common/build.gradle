@@ -26,13 +26,13 @@ dependencies {
     // No Fabric API in common: there is no Forgified Fabric API on the 1.20.1 line, so loader API
     // usage stays in the platform modules (fabric/ and forge/).
 
-    // Ecosystem libraries: the Modrinth maven for the released ones, mavenLocal for the 1.20.1-modern ports.
+    // Ecosystem libraries: all resolved from the Modrinth maven.
     modImplementation("maven.modrinth:tiny-config:${rootProject.tiny_config_version}-${platform}")
-    modImplementation("net.spell_power:spell_power-${platform}:${rootProject.spell_power_version}")
-    modImplementation("net.foundation:ranged_weapon_api-${platform}:${rootProject.ranged_weapon_api_version}")
+    modImplementation("maven.modrinth:spell-power:${rootProject.spell_power_version}-${platform}")
+    modImplementation("maven.modrinth:ranged-weapon-api:${rootProject.ranged_weapon_api_version}-${platform}")
     // Critical Strike is referenced only by potion id (strings), never by class, but keeping it on the
     // compile classpath matches the 1.21.1 line and costs nothing.
-    modCompileOnly("net.critical_strike:critical_strike-${platform}:${rootProject.critical_strike_version}")
+    modCompileOnly("maven.modrinth:critical-strike:${rootProject.critical_strike_version}-${platform}")
 
     // StructurePoolAPI 1.2.1+ ships a Forge artifact too, and its `injectAll` touches no loader API,
     // so the village injection and the `config/village_taverns/villages.json` config live here in

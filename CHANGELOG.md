@@ -1,4 +1,4 @@
-# 1.3.0.001
+# 1.3.0+1.20.1
 
 > ### ⚠️ Read this before updating
 >

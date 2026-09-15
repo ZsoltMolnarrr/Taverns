@@ -53,11 +53,11 @@ dependencies {
     common(project(path: ':common', configuration: 'namedElements')) { transitive = false }
     shadowBundle project(path: ':common', configuration: 'transformProductionForge')
 
-    // Ecosystem libraries: the Modrinth maven for the released ones, mavenLocal for the 1.20.1-modern ports.
+    // Ecosystem libraries: all resolved from the Modrinth maven.
     include(modImplementation("maven.modrinth:tiny-config:${rootProject.tiny_config_version}-${platform}"))
-    modImplementation("net.spell_power:spell_power-${platform}:${rootProject.spell_power_version}")
-    modImplementation("net.foundation:ranged_weapon_api-${platform}:${rootProject.ranged_weapon_api_version}")
-    modCompileOnly("net.critical_strike:critical_strike-${platform}:${rootProject.critical_strike_version}")
+    modImplementation("maven.modrinth:spell-power:${rootProject.spell_power_version}-${platform}")
+    modImplementation("maven.modrinth:ranged-weapon-api:${rootProject.ranged_weapon_api_version}-${platform}")
+    modCompileOnly("maven.modrinth:critical-strike:${rootProject.critical_strike_version}-${platform}")
 
     // Forge 47 ships plain Mixin 0.8.5 and bundles no MixinExtras, while `VillagerMixin` uses
     // @WrapOperation -- so this module must JiJ it (0.5.5+, never 0.4.1).
