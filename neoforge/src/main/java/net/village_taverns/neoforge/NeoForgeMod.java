@@ -7,12 +7,9 @@ import net.minecraft.world.entity.ai.village.poi.PoiType;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
-import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
-import net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent;
 import net.neoforged.neoforge.registries.RegisterEvent;
 import net.village_taverns.TavernsMod;
-import net.village_taverns.TavernBrewing;
 import net.village_taverns.TavernVillagers;
 import net.village_taverns.block.TavernBlocks;
 
@@ -23,9 +20,6 @@ public final class NeoForgeMod {
         modBus.addListener(RegisterEvent.class, NeoForgeMod::register);
         // Tavern blocks into the vanilla Functional tab — NeoForge mod-bus event (replaces ItemGroupEvents).
         modBus.addListener(BuildCreativeModeTabContentsEvent.class, NeoForgeMod::buildTabContents);
-        // Brewing recipes - game-bus event, fired after BrewingRecipeRegistry.registerDefaults and
-        // before build(), so our recipes append after vanilla's. Replaces Fabric API's BUILD event.
-        NeoForge.EVENT_BUS.addListener(RegisterBrewingRecipesEvent.class, NeoForgeMod::onRegisterBrewingRecipes);
     }
 
     public static void register(RegisterEvent event) {
@@ -50,10 +44,6 @@ public final class NeoForgeMod {
         event.register(Registries.VILLAGER_PROFESSION, reg -> {
             TavernVillagers.registerProfession();
         });
-    }
-
-    private static void onRegisterBrewingRecipes(RegisterBrewingRecipesEvent event) {
-        TavernBrewing.register(event.getBuilder());
     }
 
     private static void buildTabContents(BuildCreativeModeTabContentsEvent event) {
