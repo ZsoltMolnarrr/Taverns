@@ -1,5 +1,7 @@
 # 1.3.0
 
+- Updated for Minecraft 26.3
+- Brewing recipes are now data pack recipes, `config/village_taverns/brewing.json` is gone
 - Updated for Minecraft 26.2
 - Updated for Minecraft 26.1.2 (Java 25)
 - Added brewing recipes for all Spell Power and Ranged Weapon potions, previously these were only obtainable from bartender trades
